@@ -9,8 +9,8 @@ library(ggpubr)
 # Create labels
 boxLabels = c("rs1061632_T Discovery", "rs1061632_T Validation")
 
-rs2 <- fread(cmd = "egrep 'Z_STAT|ADD' /vol/projects/CIIM/Lyme_GWAS/GWAS/assoc/out/lyme1_500FG.pheno.glm.logistic.hybrid | egrep 'Z_STAT|rs1061632'")
-rs <- fread(cmd = "egrep 'Z_STAT|ADD' /vol/projects/CIIM/Lyme_GWAS/GWAS/assoc/out/lyme2_300BCG.pheno.glm.logistic.hybrid | egrep 'Z_STAT|rs1061632'")
+rs2 <- fread(cmd = "egrep 'Z_STAT|ADD' out/lyme1_500FG.pheno.glm.logistic.hybrid | egrep 'Z_STAT|rs1061632'")
+rs <- fread(cmd = "egrep 'Z_STAT|ADD' out/lyme2_300BCG.pheno.glm.logistic.hybrid | egrep 'Z_STAT|rs1061632'")
 
 df <- data.frame(
   yAxis = length(boxLabels):1,
@@ -43,7 +43,7 @@ max = rs$POS+5e5
 locus1 <- fread(cmd = paste0("awk '{if($1 ==",chr,
                             " && $2 > ",min,
                             " && $2 < ",max,
-                            ")print}' /vol/projects/CIIM/Lyme_GWAS/GWAS/assoc/out/lyme1_500FG.pheno.glm.logistic.hybrid | grep ADD"))
+                            ")print}' out/lyme1_500FG.pheno.glm.logistic.hybrid | grep ADD"))
 colnames(locus1) <- colnames(rs)
 locus1 <- locus1 %>% mutate(logP = log10(P))
 locus1$batch <- "1"
@@ -51,7 +51,7 @@ locus1$batch <- "1"
 #Add the imputation information
 locus1_impu <- fread(cmd = paste0("awk -F ':' '{if($2 > ",min,
                                   " && $2 < ",max,
-                                  ") print}' /vol/projects/CIIM/Lyme_GWAS/GWAS/Genetics/output/batch1/imputation/local/chr",chr, ".info"))
+                                  ") print}' output/batch1/imputation/local/chr",chr, ".info"))
 colnames(locus1_impu) <- c("SNPid","Ref","Alt","Alt_frq","MAF","AvgCall","Rsq","Genotyped","-","--","---","----","-----")
 
 locus1_impu <- locus1_impu %>% separate(SNPid, into = c('#CHROM', 'POS'))%>% dplyr::rename('REF' = Ref, 'ALT' = Alt)%>%
@@ -63,7 +63,7 @@ locus1 <- left_join(locus1, locus1_impu, by = c('#CHROM', 'POS', 'REF', 'ALT'))
 locus2 <- fread(cmd = paste0("awk '{if($1 ==",chr,
                              " && $2 > ",min,
                              " && $2 < ",max,
-                             ")print}' /vol/projects/CIIM/Lyme_GWAS/GWAS/assoc/out/lyme2_300BCG.pheno.glm.logistic.hybrid | grep ADD"))
+                             ")print}' out/lyme2_300BCG.pheno.glm.logistic.hybrid | grep ADD"))
 colnames(locus2) <- colnames(rs)
 locus2 <- locus2 %>% mutate(logP = -log10(P))
 locus2$batch <- "2"
@@ -71,7 +71,7 @@ locus2$batch <- "2"
 #Add the imputation information
 locus2_impu <- fread(cmd = paste0("awk -F ':' '{if($2 > ",min,
                                   " && $2 < ",max,
-                                  ") print}' /vol/projects/CIIM/Lyme_GWAS/GWAS/Genetics/output/batch2/imputation/local/chr",chr, ".info"))
+                                  ") print}' output/batch2/imputation/local/chr",chr, ".info"))
 colnames(locus2_impu) <- c("SNPid","Ref","Alt","Alt_frq","MAF","AvgCall","Rsq","Genotyped","-","--","---","----","-----")
 
 locus2_impu <- locus2_impu %>% separate(SNPid, into = c('#CHROM', 'POS'))%>% dplyr::rename('REF' = Ref, 'ALT' = Alt)%>%
@@ -133,9 +133,9 @@ ggsave("../SVG/Fig2.Locuszoom.svg", plot = plot, width = 7, height = 12)
 
 #cQTL plots
 #The effect of rs1061632 on other things
-dosages <- as.data.frame(fread("zgrep -e rs1061632 -e HV /vol/projects/CIIM/cohorts/500FG/Genotype/merged/merged_dosages.txt.gz"))
+dosages <- as.data.frame(fread("zgrep -e rs1061632 -e HV 500FG/Genotype/merged/merged_dosages.txt.gz"))
 dosages <- rename(dosages, 'V1' = id)
-cytokines <- as.data.frame(fread("/vol/projects/CIIM/cohorts/500FG/Molecular_phenotype/pheno_91cytokines_4Raul.csv"))
+cytokines <- as.data.frame(fread("500FG/Molecular_phenotype/pheno_91cytokines_4Raul.csv"))
 #A bit of having the same ppl
 dosages <- dosages[,intersect(colnames(dosages), colnames(cytokines))]
 cytokines <- cytokines[,intersect(colnames(dosages), colnames(cytokines))]
@@ -181,7 +181,7 @@ cQTL_boxplot('rs1061632', 'IL1b_Borreliamix_PBMC_24h')
 
 #eQTLgen plots
 #Read eQTLgen results for the snp
-eQTLgen <- fread('zgrep -e rs1061632 -e SNPChr /vol/projects/CIIM/resources/eqtlGen/2019-12-11-cis-eQTLsFDR0.05-ProbeLevel-CohortInfoRemoved-BonferroniAdded.txt.gz')
+eQTLgen <- fread('zgrep -e rs1061632 -e SNPChr eqtlGen/2019-12-11-cis-eQTLsFDR0.05-ProbeLevel-CohortInfoRemoved-BonferroniAdded.txt.gz')
 #Change to the assessed allele = T
 eQTLgen <- mutate(eQTLgen, 'AssessedAllele' = 'T', 'OtherAllele' = 'C', Zscore = -Zscore)
 
@@ -193,8 +193,8 @@ ggplot(eQTLgen, aes(x=Zscore, y=reorder(GeneSymbol, Zscore)))+
 ggsave('../SVG/Fig2.eQTLgen.svg', width = 5, height = 5)
 
 #RNAseq plots
-pheno <- read.table("/vol/projects/CIIM/Lyme_GWAS/Raw/RNA/LB_phenotypes.txt", header = T)
-counts <- read.table("/vol/projects/CIIM/Lyme_GWAS/Raw/RNA/LB_HV_normCounts_filt.txt", header = T)
+pheno <- read.table("Raw/RNA/LB_phenotypes.txt", header = T)
+counts <- read.table("Raw/RNA/LB_HV_normCounts_filt.txt", header = T)
 colnames(counts) <- gsub("H.A.","H-A-", colnames(counts)) %>%
   gsub("LP.A.","LP-A-", .) %>%
   gsub("LP.R.", "LP-R-", .)
@@ -251,7 +251,7 @@ apply(counts_sub_mat[eQTL,], 1, function(x) cor.test(x,t(counts_sub_mat['IRF7',]
 #Calculating the ratio between both
 counts_sub$ratio <- counts_sub$ETV7/counts_sub$IRF7
 #How is rs1061632 affecting gene expression and the ratio between the two?
-rs1061632 <- fread(cmd = 'grep -e LP -e rs1061632 /vol/projects/CIIM/Lyme_GWAS/PersistentLyme/input/lyme-merged_dosage.tsv')
+rs1061632 <- fread(cmd = 'grep -e LP -e rs1061632 input/lyme-merged_dosage.tsv')
 rs1061632 <- column_to_rownames(rs1061632, 'V1')%>% t() %>% as.data.frame()%>%rownames_to_column('patient')
 rs1061632$rs1061632 <- ifelse(rs1061632$`6:36457484:T:C%rs1061632` < 1.5, ifelse(rs1061632$`6:36457484:T:C%rs1061632` < 0.5, 0, 1), 2)
 counts_sub <- left_join(counts_sub, rs1061632)
@@ -270,7 +270,7 @@ for (i in c(eQTL, 'ratio')){
 #IRF7 hypothesis
 
 #Reading the 500FG rnaseq data and finding the correlation between IRF7 and ETV7, checking if the correlation is different in healthy patients
-irf7_gen <- fread("/vol/projects/CIIM/Lyme_GWAS/GWAS/Genetics/input/batch1/lyme1_500FG_rs1061632.traw")%>%
+irf7_gen <- fread("batch1/lyme1_500FG_rs1061632.traw")%>%
   column_to_rownames(var = "SNP")%>%
   dplyr::select(-c("CHR","(C)M","POS","COUNTED","ALT"))%>%
   t() %>% as.data.frame()%>% rownames_to_column(var = "patient")%>%
@@ -280,7 +280,7 @@ irf7_gen <- fread("/vol/projects/CIIM/Lyme_GWAS/GWAS/Genetics/input/batch1/lyme1
 irf7_gen <- mutate_at(irf7_gen, "rs1061632", function(x)
   ifelse(x == 0, "TT", ifelse(x == 1, "TC", ifelse(x == 2, "CC", x))))
 
-irf7_counts <- fread("/vol/projects/CIIM/Lyme_GWAS/Raw/RNA/1508_Li_RNAseq.expression.genelevel.v75.htseq.txt")%>%
+irf7_counts <- fread("Raw/RNA/1508_Li_RNAseq.expression.genelevel.v75.htseq.txt")%>%
   column_to_rownames(var = "probe")
 
 #Library size corrected counts
