@@ -4,7 +4,7 @@ library(tidyverse)
 library(ggpubr)
 
 
-rs <- fread(cmd = "egrep 'Z_STAT|ADD' /vol/projects/CIIM/Lyme_GWAS/GWAS/assoc/out/lyme1_500FG.pheno.glm.logistic.hybrid | grep -w -e Z_STAT -e rs4110197")
+rs <- fread(cmd = "egrep 'Z_STAT|ADD' out/lyme1_500FG.pheno.glm.logistic.hybrid | grep -w -e Z_STAT -e rs4110197")
 
 #Mirror Locuszoomplot
 chr = rs$`#CHROM`
@@ -16,7 +16,7 @@ max = rs$POS+2.5e5
 locus1 <- fread(cmd = paste0("awk '{if($1 ==",chr,
                              " && $2 > ",min,
                              " && $2 < ",max,
-                             ")print}' /vol/projects/CIIM/Lyme_GWAS/GWAS/assoc/out/lyme1_500FG.pheno.glm.logistic.hybrid | grep ADD"))
+                             ")print}' out/lyme1_500FG.pheno.glm.logistic.hybrid | grep ADD"))
 colnames(locus1) <- colnames(rs)
 locus1 <- locus1 %>% mutate(logP = -log10(P))
 locus1$batch <- "1"
@@ -24,7 +24,7 @@ locus1$batch <- "1"
 #Add the imputation information
 locus1_impu <- fread(cmd = paste0("awk -F ':' '{if($2 > ",min,
                                   " && $2 < ",max,
-                                  ") print}' /vol/projects/CIIM/Lyme_GWAS/GWAS/Genetics/output/batch1/imputation/local/chr",chr, ".info"))
+                                  ") print}' imputation/local/chr",chr, ".info"))
 colnames(locus1_impu) <- c("SNPid","Ref","Alt","Alt_frq","MAF","AvgCall","Rsq","Genotyped","-","--","---","----","-----")
 
 locus1_impu <- locus1_impu %>% separate(SNPid, into = c('#CHROM', 'POS'))%>% dplyr::rename('REF' = Ref, 'ALT' = Alt)%>%
@@ -36,7 +36,7 @@ locus1 <- left_join(locus1, locus1_impu, by = c('#CHROM', 'POS', 'REF', 'ALT'))
 locus2 <- fread(cmd = paste0("awk '{if($1 ==",chr,
                              " && $2 > ",min,
                              " && $2 < ",max,
-                             ")print}' /vol/projects/CIIM/Lyme_GWAS/GWAS/assoc/out/lyme2_300BCG.pheno.glm.logistic.hybrid | grep ADD"))
+                             ")print}' out/lyme2_300BCG.pheno.glm.logistic.hybrid | grep ADD"))
 colnames(locus2) <- colnames(rs)
 locus2 <- locus2 %>% mutate(logP = log10(P))
 locus2$batch <- "2"
@@ -44,7 +44,7 @@ locus2$batch <- "2"
 #Add the imputation information
 locus2_impu <- fread(cmd = paste0("awk -F ':' '{if($2 > ",min,
                                   " && $2 < ",max,
-                                  ") print}' /vol/projects/CIIM/Lyme_GWAS/GWAS/Genetics/output/batch2/imputation/local/chr",chr, ".info"))
+                                  ") print}' output/batch2/imputation/local/chr",chr, ".info"))
 colnames(locus2_impu) <- c("SNPid","Ref","Alt","Alt_frq","MAF","AvgCall","Rsq","Genotyped","-","--","---","----","-----")
 
 locus2_impu <- locus2_impu %>% separate(SNPid, into = c('#CHROM', 'POS'))%>% dplyr::rename('REF' = Ref, 'ALT' = Alt)%>%
@@ -114,14 +114,14 @@ ggsave("../SVG/Fig6.Locuszoom_mirror.svg", plot = plot, width = 10, height = 10)
 locus <- fread(cmd = paste0("awk -F: '{if($1 ==",chr,
                              " && $2 > ",min,
                              " && $2 < ",max,
-                             ")print}' /vol/projects/CIIM/Lyme_GWAS/GWAS/assoc/out/lyme1_lyme2.metal.tbl"))
+                             ")print}' out/lyme1_lyme2.metal.tbl"))
 colnames(locus) <- c('ID','REF','ALT','beta','se','P', 'direction')
 locus <- locus %>% mutate(logP = -log10(P))
 
 #Add the imputation information
 locus_impu <- fread(cmd = paste0("awk -F ':' '{if($2 > ",min,
                                   " && $2 < ",max,
-                                  ") print}' /vol/projects/CIIM/Lyme_GWAS/GWAS/Genetics/output/batch1/imputation/local/chr",chr, ".info"))
+                                  ") print}' output/batch1/imputation/local/chr",chr, ".info"))
 colnames(locus_impu) <- c("SNPid","Ref","Alt","Alt_frq","MAF","AvgCall","Rsq","Genotyped","-","--","---","----","-----")
 
 locus_impu <- locus_impu %>% separate(SNPid, into = c('#CHROM', 'POS'))%>% dplyr::rename('REF' = Ref, 'ALT' = Alt)
