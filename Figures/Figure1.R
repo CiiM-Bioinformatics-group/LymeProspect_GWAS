@@ -158,8 +158,8 @@ read_logistic <- function(path){
   df <- df %>% separate(ID, c('chrpos','SNP'), sep = '%', remove = F)
   df <- df %>% rename('CHR' = '#CHROM', 'BP' = 'POS')
 }
-LB1 <- read_logistic('/vol/projects/CIIM/Lyme_GWAS/GWAS/assoc/out/lyme1_500FG.pheno.glm.logistic.hybrid')
-LB2 <- read_logistic('/vol/projects/CIIM/Lyme_GWAS/GWAS/assoc/out/lyme2_300BCG.pheno.glm.logistic.hybrid')
+LB1 <- read_logistic('out/lyme1_500FG.pheno.glm.logistic.hybrid')
+LB2 <- read_logistic('out/lyme2_300BCG.pheno.glm.logistic.hybrid')
 pl <- ggchicago(LB2, LB1, scale_color = scale_color_manual(values = rep(c("deepskyblue4", "lightskyblue3"), 11)))+
         theme(axis.text.x = element_text(angle=90))
 ggsave("../SVG/Fig1.Miami.svg", plot = pl, width = 14, height = 8)
