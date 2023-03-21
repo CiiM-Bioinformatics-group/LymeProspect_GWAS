@@ -1,5 +1,5 @@
-i: "/vol/projects/CIIM/Lyme_GWAS/GWAS/Genetics/input/batch1/"
-o: "/vol/projects/CIIM/Lyme_GWAS/GWAS/Genetics/output/batch1/"
+i: "input/batch1/"
+o: "output/batch1/"
 check_sex: False
 
 # Parameters
