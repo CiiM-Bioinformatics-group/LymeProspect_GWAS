@@ -49,7 +49,7 @@ rule split_by_chromosome:
     output: outdir+"/QC/"+sample+".harmonized-chr{chr}.vcf"
     log:    logdir+"/split_by_chromosome/chr{chr}.log"
     shell:
-        "{ciim_tools}/plink --bfile {indir}/{sample} \
+        "plink --bfile {indir}/{sample} \
         --chr {wildcards.chr} --recode vcf-iid \
         --out {outdir}/QC/{sample}.harmonized-chr{wildcards.chr}"
 
@@ -58,7 +58,7 @@ rule sort:
     output: outdir+"/QC/"+sample+".harmonized-chr{chr}_sorted.vcf.gz"
     log:    logdir+"/sort/chr{chr}.log"
     shell:
-        "{ciim_tools}/bcftools sort {input} | \
+        "bcftools sort {input} | \
         {biotools}/bgzip -c > {output}"
 
 def generate_password(n):
