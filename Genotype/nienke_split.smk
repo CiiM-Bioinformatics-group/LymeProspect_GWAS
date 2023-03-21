@@ -16,36 +16,20 @@ outdir = config["o"] # path to output folder
 check_sex = config["check_sex"] # check sex or not
 chunks = 100 # how many files dosage should be split into
 
-ciim_tools = "/vol/projects/CIIM/resources/tools"
-G1000 = "/vol/projects/CIIM/Lyme_GWAS/GWAS/1000G"
-HRC = "/vol/projects/CIIM/Lyme_GWAS/GWAS/HRC"
+ciim_tools = "resources/tools"
+G1000 = "1000G"
+HRC = "HRC"
 biotools = "/vol/biotools/bin"
 rscript = "/vol/biotools/alma8/R-4.2.0/bin/Rscript"
 
-base = "/vol/projects/BIIM_guest/meta_cQTL"
-scripts = base + "/cQTL_pipeline/workflow/scripts"
+
 tools = base + "/tools"
 logdir = outdir+"/logs"
 
-env = "/vol/projects/BIIM_guest/meta_cQTL/tools/miniconda3/envs/cQTL_env/bin/"
 
 ext = ["bed", "bim", "fam"]     # plink
 ext2 = ["pgen", "psam", "pvar"] # plink2
 
-cohort = indir.split("/")[-1]
-logger.info("> Cohort: %s " % cohort)
-
-# TODO: make cohort be used instead of sample for all the output files, is more readable?
-stream = os.popen("basename `ls %s/*.bed` .bed" % indir)
-sample = stream.read().strip()
-logger.info("> Sample name: %s " % sample)
-
-# Probably a hacky way to do this, maybe instead include them in a config file.
-# Don't filter them anymore during the pipeline as it will then be expecting
-# files that will never be created.
-stream = os.popen("""cat %s/Phenotype/cytokines_modified.tsv | tail -n +2 | cut -f1""" % indir)
-cytokines = stream.read().strip().split("\n")
-logger.info("> Cytokines (%d): %s\n" % (len(cytokines), ", ".join(cytokines)))
 
 onstart:
     print("##### Snakemake starting #####\n")
@@ -155,7 +139,7 @@ rule pfile:
     log:    logdir+"/pfile/{chr}.log"
     resources: mem_mb=20000
     shell:
-        "{ciim_tools}/plink2 --vcf {input} dosage=HDS --make-pgen \
+        "plink2 --vcf {input} dosage=HDS --make-pgen \
         --out {outdir}/PostImp/chr{wildcards.chr}" #--double-id
 
 rule filter:
@@ -165,7 +149,7 @@ rule filter:
     log:    logdir+"/filter/chr{chr}.log"
     resources: mem_mb=10000
     shell:
-        "{ciim_tools}/plink2 --pfile {outdir}/PostImp/chr{wildcards.chr} \
+        "plink2 --pfile {outdir}/PostImp/chr{wildcards.chr} \
          --qual-scores {input.info} 7 1 1 --qual-threshold 0.5 --make-pgen \
          --out {outdir}/PostImp/filtered_chr{wildcards.chr}"
 
@@ -178,7 +162,7 @@ rule merge:
         ls {outdir}/PostImp/filtered_chr*.pgen | sed 's/.pgen//g' > \
         {outdir}/PostImp/merge.list
 
-        {ciim_tools}/plink2 --pmerge-list {outdir}/PostImp/merge.list \
+        plink2 --pmerge-list {outdir}/PostImp/merge.list \
         --out {outdir}/PostImp/merge
         """
 
@@ -189,7 +173,7 @@ rule filter_merged:
             hwe = config['filter_hwe']
     log:    logdir+"/filter_merged.log"
     shell:
-        "{ciim_tools}/plink2 --pfile {outdir}/PostImp/merge --maf {params.maf} \
+        "plink2 --pfile {outdir}/PostImp/merge --maf {params.maf} \
         --hwe {params.hwe} --make-pgen --out {outdir}/PostImp/merge_filtered"
 
 rule rsid:
@@ -205,7 +189,7 @@ rule rsid:
         awk \'{{print $1\" \"$1\"%\"$2}}\' {outdir}/PostImp/rsID_chrpos.txt > \
         {outdir}/PostImp/rsID_chrpos_pasted.txt
 
-        {ciim_tools}/plink2 --pfile {outdir}/PostImp/merge_filtered \
+        plink2 --pfile {outdir}/PostImp/merge_filtered \
         --update-name {outdir}/PostImp/rsID_chrpos_pasted.txt --make-pgen \
         --out {outdir}/PostImp/merge_filtered_rsid
 	"""
