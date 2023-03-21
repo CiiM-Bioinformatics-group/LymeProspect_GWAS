@@ -1,0 +1,8 @@
+i: "/vol/projects/CIIM/Lyme_GWAS/GWAS/Genetics/input/batch2/"
+o: "/vol/projects/CIIM/Lyme_GWAS/GWAS/Genetics/output/batch2/"
+check_sex: False
+
+# Parameters
+filter_maf: 0.05
+filter_hwe: 1e-12
+
